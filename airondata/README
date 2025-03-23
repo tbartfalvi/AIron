@@ -1,0 +1,11 @@
+PREREQS
+
+* VSCODE
+* Python 3
+
+SETUP
+
+* Create virtual environment (venv)
+* Install numpy (python3 -m pip install numpy)
+* Install pymongo (pip install pymongo)
+* Install bcrypt (pip install bcrypt)
