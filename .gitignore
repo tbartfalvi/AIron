@@ -138,3 +138,5 @@ venv/
 *env/
 */env/
 dev_env/
+
+build/
