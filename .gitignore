@@ -132,3 +132,9 @@ airondata/test.py
 
 # No DS_Store files in git
 **/.DS_Store
+
+venv/
+.venv/
+*env/
+*/env/
+dev_env/
