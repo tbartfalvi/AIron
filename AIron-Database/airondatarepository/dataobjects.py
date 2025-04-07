@@ -16,4 +16,4 @@ class Schedule:
     name: str
     type: ScheduleType
     json: str
-    created_on: datetime
+    created_on: str

@@ -1,17 +1,22 @@
 import dataclasses
 import json
+import uuid
 from airondatarepository.dataworker import DataWorker
 from airondatarepository import dataconstants
 from airondatarepository.dataobjects import User
 from airondatarepository.encrypt import encrypt_password
 from airondatarepository.encrypt import check_password
+from airondatarepository.dataobjects import Schedule
+from airondatarepository.dataenums import ScheduleType
 from bson import ObjectId
+from datetime import datetime
 
 # The mongodb data repository
 class DataRepository:
     def __init__(self):
         pass
 
+    # User functions
     def insert_user(self, full_name: str, email: str, password: str):
         encryoted_password = encrypt_password(password)
         data_worker = DataWorker(dataconstants.USER_COLLECTION)
@@ -75,6 +80,54 @@ class DataRepository:
         data_worker.close_connection()
         
         return result
+    
+    # Schedule functions
+    def add_schedule(self, id: str, name: str, type: ScheduleType, schedudle_json: str):
+        user = self.get_user(id)
+
+        if user:
+            schedule = Schedule(
+                str(uuid.uuid4()),
+                name,
+                str(type),
+                schedudle_json,
+                datetime.fromisoformat(datetime.now().isoformat()).__str__()
+            )
+
+            user.schedules.append(schedule)
+            data_worker = DataWorker(dataconstants.USER_COLLECTION)
+            query = { dataconstants.ID: ObjectId(id) }
+            json_string = json.dumps(user, cls=EnhancedJSONEncoder)
+            data_dict = json.loads(json_string)
+            result = data_worker.collection.update_one(query, { "$set": data_dict})
+
+            data_worker.close_connection()
+
+            return result.modified_count == 1
+
+        return False
+    
+    def get_schedules_by_user(self, id: str):
+        user = self.get_user(id)
+        if user:
+            return user.schedules
+        
+        return []
+    
+    def get_schdule_by_id(self, user_id: str, schedule_id: str):
+        schedules = self.get_schedules_by_user(user_id)
+        
+        for sched in schedules:
+            if sched[dataconstants.SCHEDULE_ID] == schedule_id:
+                return Schedule(
+                    sched[dataconstants.SCHEDULE_ID],
+                    sched[dataconstants.NAME],
+                    sched[dataconstants.TYPE],
+                    sched[dataconstants.JSON],
+                    sched[dataconstants.CREATED_ON]
+                )
+
+        return None
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):

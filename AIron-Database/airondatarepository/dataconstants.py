@@ -10,5 +10,12 @@ PASSWORD = "password"
 ID = "_id"
 INPUTS = "inputs"
 SCHEDULES = "schedules"
+
+# Schedule values
+SCHEDULE_ID = "id"
+NAME = "name"
+JSON = "json"
+TYPE = "type"
+CREATED_ON = "created_on"
 #Cluster74359
 #XHRaY2Bze0Z6
