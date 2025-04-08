@@ -1,11 +1,21 @@
 import dataclasses
 from fastapi import FastAPI, HTTPException
 from airondatarepository.datarepository import DataRepository
-from .models import User
+from fastapi.middleware.cors import CORSMiddleware
+from models import User
 import json
 from airondatarepository.dataenums import ScheduleType
 
 app = FastAPI()
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
