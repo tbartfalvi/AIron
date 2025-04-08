@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from airondatarepository.datarepository import DataRepository
 from .models import User
 import json
+from airondatarepository.dataenums import ScheduleType
 
 app = FastAPI()
 
@@ -43,6 +44,28 @@ def get_user(id: str):
     user = User(id, result.full_name, result.email)
     user_json = json.dumps(user, cls=EnhancedJSONEncoder)
     return { "user": user_json }
+
+@app.post("/schedule/{user_id}/{name}/{type}/{schedule_json}")
+def add_schedule(user_id: str, name: str, type: int, schedule_json: str):
+    repository = DataRepository()
+    result = repository.add_schedule(user_id, name, ScheduleType(type), schedule_json)
+    return { "result": str(result) }
+
+@app.post("/schedules/{user_id}")
+def get_schedules(user_id: str):
+    repository = DataRepository()
+    result = repository.get_schedules_by_user(user_id)
+    return { "schedules": result }
+
+@app.post("/schedule-get/{user_id}/{scehdule_id}")
+def get_schedule_by_id(user_id: str, schedule_id: str):
+    repository = DataRepository()
+    result = repository.get_schdule_by_id(user_id, schedule_id)
+
+    if result is None:
+        raise HTTPException(status_code=404, detail="Schedule not found.")
+
+    return { "schedule": result }
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):

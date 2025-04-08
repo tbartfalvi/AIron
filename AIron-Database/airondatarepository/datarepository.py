@@ -119,13 +119,7 @@ class DataRepository:
         
         for sched in schedules:
             if sched[dataconstants.SCHEDULE_ID] == schedule_id:
-                return Schedule(
-                    sched[dataconstants.SCHEDULE_ID],
-                    sched[dataconstants.NAME],
-                    sched[dataconstants.TYPE],
-                    sched[dataconstants.JSON],
-                    sched[dataconstants.CREATED_ON]
-                )
+                return sched[dataconstants.JSON]
 
         return None
 
