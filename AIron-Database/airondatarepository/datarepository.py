@@ -122,6 +122,37 @@ class DataRepository:
                 return sched[dataconstants.JSON]
 
         return None
+    
+    def delete_schedule(self, user_id: str, schedule_id: str):
+        user = self.get_user(user_id)
+        
+        if not user:
+            return False
+        
+        # Find the index of the schedule to remove
+        index_to_remove = None
+        for i, schedule in enumerate(user.schedules):
+            if schedule[dataconstants.SCHEDULE_ID] == schedule_id:
+                index_to_remove = i
+                break
+        
+        # If schedule wasn't found
+        if index_to_remove is None:
+            return False
+        
+        # Remove the schedule from the user's schedules list
+        user.schedules.pop(index_to_remove)
+        
+        # Update the user document in the database
+        data_worker = DataWorker(dataconstants.USER_COLLECTION)
+        query = { dataconstants.ID: ObjectId(user_id) }
+        json_string = json.dumps(user, cls=EnhancedJSONEncoder)
+        data_dict = json.loads(json_string)
+        result = data_worker.collection.update_one(query, { "$set": data_dict})
+        
+        data_worker.close_connection()
+        
+        return result.modified_count == 1
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
