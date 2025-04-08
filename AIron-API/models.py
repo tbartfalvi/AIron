@@ -1,6 +1,8 @@
-from pydantic import BaseModel
 
-class UserPayload(BaseModel):
+from dataclasses import dataclass
+
+@dataclass
+class User:
+    id: str
     full_name: str
     email: str
-    password: str

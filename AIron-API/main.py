@@ -1,5 +1,8 @@
+import dataclasses
 from fastapi import FastAPI, HTTPException
 from airondatarepository.datarepository import DataRepository
+from .models import User
+import json
 
 app = FastAPI()
 
@@ -10,9 +13,39 @@ def root():
 @app.post("/user/{full_name}/{email}/{password}")
 def add_user(full_name: str, email: str, password: str):
     repository = DataRepository()
+
+    exists = repository.user_exsits(email)
+    
+    if exists:
+        raise HTTPException(status_code=401, detail="User already exists in the system.")
+
     id = repository.insert_user(full_name, email, password)
 
     if id is None:
-        raise HTTPException(status_code=400, detail="Failed to add new user.")
+        raise HTTPException(status_code=402, detail="Failed to add new user.")
     
     return { "user_id": str(id) }
+
+@app.post("/login/{email}/{password}")
+def login(email: str, password: str):
+    repository = DataRepository()
+    result = repository.login(email, password)
+    return { "result": str(result) }
+
+@app.post("/user-info/{id}")
+def get_user(id: str):
+    repository = DataRepository()
+    result = repository.get_user(id)
+ 
+    if result == None:
+        raise HTTPException(status_code=403, detail="User not found.")
+    
+    user = User(id, result.full_name, result.email)
+    user_json = json.dumps(user, cls=EnhancedJSONEncoder)
+    return { "user": user_json }
+
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
