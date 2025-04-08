@@ -28,10 +28,10 @@ class DataRepository:
         data_worker.close_connection()
         return id
     
-    def user_exsits(self, id: str):
+    def user_exsits(self, email: str):
         exists = False
         data_worker = DataWorker(dataconstants.USER_COLLECTION)
-        query = { dataconstants.ID: ObjectId(id) }
+        query = { dataconstants.EMAIL: email }
         doc = data_worker.collection.find_one(query)
         
         if doc:

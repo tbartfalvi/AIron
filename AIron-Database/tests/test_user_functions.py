@@ -11,7 +11,7 @@ if id is not None:
     print("Test insert_user: Passed")
 
     print("Begin test user_exists")
-    user_exists_result = repository.user_exsits(id)
+    user_exists_result = repository.user_exsits(test_constants.EMAIL)
 
     if user_exists_result == False:
         print("Test user_exists: Failed")
