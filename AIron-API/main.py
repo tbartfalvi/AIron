@@ -1,21 +1,11 @@
 import dataclasses
 from fastapi import FastAPI, HTTPException
 from airondatarepository.datarepository import DataRepository
-from fastapi.middleware.cors import CORSMiddleware
-from models import User
+from .models import User
 import json
 from airondatarepository.dataenums import ScheduleType
 
 app = FastAPI()
-
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.get("/")
 def root():
@@ -76,6 +66,16 @@ def get_schedule_by_id(user_id: str, schedule_id: str):
         raise HTTPException(status_code=404, detail="Schedule not found.")
 
     return { "schedule": result }
+
+@app.delete("/schedule-delete/{user_id}/{schedule_id}")
+def delete_schedule(user_id: str, schedule_id: str):
+    repository = DataRepository()
+    result = repository.delete_schedule(user_id, schedule_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Failed to delete schedule.")
+    
+    return { "result": str(result) }
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
