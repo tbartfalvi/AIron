@@ -17,5 +17,6 @@ NAME = "name"
 JSON = "json"
 TYPE = "type"
 CREATED_ON = "created_on"
+CSV = "csv"
 #Cluster74359
 #XHRaY2Bze0Z6
