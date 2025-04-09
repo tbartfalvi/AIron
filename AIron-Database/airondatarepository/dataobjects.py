@@ -16,4 +16,5 @@ class Schedule:
     name: str
     type: ScheduleType
     json: str
+    csv: str
     created_on: str
