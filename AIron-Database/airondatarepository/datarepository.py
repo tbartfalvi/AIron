@@ -81,31 +81,34 @@ class DataRepository:
         
         return result
     
-    # Schedule functions
     def add_schedule(self, id: str, name: str, type: ScheduleType, schedudle_json: str):
-        user = self.get_user(id)
+    user = self.get_user(id)
 
-        if user:
-            schedule = Schedule(
-                str(uuid.uuid4()),
-                name,
-                str(type),
-                schedudle_json,
-                datetime.fromisoformat(datetime.now().isoformat()).__str__()
-            )
+    if user:
+        # Generate a default CSV with 5 empty columns
+        default_csv = ",,,,"
 
-            user.schedules.append(schedule)
-            data_worker = DataWorker(dataconstants.USER_COLLECTION)
-            query = { dataconstants.ID: ObjectId(id) }
-            json_string = json.dumps(user, cls=EnhancedJSONEncoder)
-            data_dict = json.loads(json_string)
-            result = data_worker.collection.update_one(query, { "$set": data_dict})
+        schedule = Schedule(
+            str(uuid.uuid4()),
+            name,
+            str(type),
+            schedudle_json,
+            datetime.fromisoformat(datetime.now().isoformat()).__str__(),
+            default_csv  # Add the default CSV field
+        )
 
-            data_worker.close_connection()
+        user.schedules.append(schedule)
+        data_worker = DataWorker(dataconstants.USER_COLLECTION)
+        query = { dataconstants.ID: ObjectId(id) }
+        json_string = json.dumps(user, cls=EnhancedJSONEncoder)
+        data_dict = json.loads(json_string)
+        result = data_worker.collection.update_one(query, { "$set": data_dict})
 
-            return result.modified_count == 1
+        data_worker.close_connection()
 
-        return False
+        return result.modified_count == 1
+
+    return False
     
     def get_schedules_by_user(self, id: str):
         user = self.get_user(id)
