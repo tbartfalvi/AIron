@@ -82,33 +82,33 @@ class DataRepository:
         return result
     
     def add_schedule(self, id: str, name: str, type: ScheduleType, schedudle_json: str):
-    user = self.get_user(id)
+        user = self.get_user(id)
 
-    if user:
-        # Generate a default CSV with 5 empty columns
-        default_csv = ",,,,"
+        if user:
+            # Generate a default CSV with 5 empty columns
+            default_csv = ",,,,"
 
-        schedule = Schedule(
-            str(uuid.uuid4()),
-            name,
-            str(type),
-            schedudle_json,
-            datetime.fromisoformat(datetime.now().isoformat()).__str__(),
-            default_csv  # Add the default CSV field
-        )
+            schedule = Schedule(
+                str(uuid.uuid4()),
+                name,
+                str(type),
+                schedudle_json,
+                datetime.fromisoformat(datetime.now().isoformat()).__str__(),
+                default_csv  # Add the default CSV field
+            )
 
-        user.schedules.append(schedule)
-        data_worker = DataWorker(dataconstants.USER_COLLECTION)
-        query = { dataconstants.ID: ObjectId(id) }
-        json_string = json.dumps(user, cls=EnhancedJSONEncoder)
-        data_dict = json.loads(json_string)
-        result = data_worker.collection.update_one(query, { "$set": data_dict})
+            user.schedules.append(schedule)
+            data_worker = DataWorker(dataconstants.USER_COLLECTION)
+            query = { dataconstants.ID: ObjectId(id) }
+            json_string = json.dumps(user, cls=EnhancedJSONEncoder)
+            data_dict = json.loads(json_string)
+            result = data_worker.collection.update_one(query, { "$set": data_dict})
 
-        data_worker.close_connection()
+            data_worker.close_connection()
 
-        return result.modified_count == 1
+            return result.modified_count == 1
 
-    return False
+        return False
     
     def get_schedules_by_user(self, id: str):
         user = self.get_user(id)
