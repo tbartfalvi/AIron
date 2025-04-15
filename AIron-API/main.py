@@ -4,15 +4,25 @@ from airondatarepository.datarepository import DataRepository
 from .models import User
 import json
 from airondatarepository.dataenums import ScheduleType
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = ["*"]  # Allows all origins.  Remove for production
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 @app.get("/")
 def root():
     return {"message": "Hello World"}
 
 @app.post("/user/{full_name}/{email}/{password}")
-def add_user(full_name: str, email: str, password: str):
+async def add_user(full_name: str, email: str, password: str):
     repository = DataRepository()
 
     exists = repository.user_exsits(email)
@@ -28,13 +38,13 @@ def add_user(full_name: str, email: str, password: str):
     return { "user_id": str(id) }
 
 @app.post("/login/{email}/{password}")
-def login(email: str, password: str):
+async def login(email: str, password: str):
     repository = DataRepository()
     result = repository.login(email, password)
     return { "result": str(result) }
 
-@app.post("/user-info/{id}")
-def get_user(id: str):
+@app.get("/user-info/{id}")
+async def get_user(id: str):
     repository = DataRepository()
     result = repository.get_user(id)
  
@@ -46,19 +56,19 @@ def get_user(id: str):
     return { "user": user_json }
 
 @app.post("/schedule/{user_id}/{name}/{type}/{schedule_json}")
-def add_schedule(user_id: str, name: str, type: int, schedule_json: str):
+async def add_schedule(user_id: str, name: str, type: int, schedule_json: str):
     repository = DataRepository()
     result = repository.add_schedule(user_id, name, ScheduleType(type), schedule_json)
     return { "result": str(result) }
 
-@app.post("/schedules/{user_id}")
-def get_schedules(user_id: str):
+@app.get("/schedules/{user_id}")
+async def get_schedules(user_id: str):
     repository = DataRepository()
     result = repository.get_schedules_by_user(user_id)
     return { "schedules": result }
 
-@app.post("/schedule-get/{user_id}/{scehdule_id}")
-def get_schedule_by_id(user_id: str, schedule_id: str):
+@app.get("/schedule-get/{user_id}/{scehdule_id}")
+async def get_schedule_by_id(user_id: str, schedule_id: str):
     repository = DataRepository()
     result = repository.get_schdule_by_id(user_id, schedule_id)
 
@@ -68,7 +78,7 @@ def get_schedule_by_id(user_id: str, schedule_id: str):
     return { "schedule": result }
 
 @app.delete("/schedule-delete/{user_id}/{schedule_id}")
-def delete_schedule(user_id: str, schedule_id: str):
+async def delete_schedule(user_id: str, schedule_id: str):
     repository = DataRepository()
     result = repository.delete_schedule(user_id, schedule_id)
     
@@ -82,3 +92,7 @@ class EnhancedJSONEncoder(json.JSONEncoder):
         if dataclasses.is_dataclass(o):
             return dataclasses.asdict(o)
         return super().default(o)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
