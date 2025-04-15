@@ -1,7 +1,7 @@
 import dataclasses
 from fastapi import FastAPI, HTTPException
 from airondatarepository.datarepository import DataRepository
-from .models import User
+from models import User
 import json
 from airondatarepository.dataenums import ScheduleType
 from fastapi.middleware.cors import CORSMiddleware
@@ -67,15 +67,18 @@ async def get_schedules(user_id: str):
     result = repository.get_schedules_by_user(user_id)
     return { "schedules": result }
 
-@app.get("/schedule-get/{user_id}/{scehdule_id}")
+@app.get("/schedule-get/{user_id}/{schedule_id}")
 async def get_schedule_by_id(user_id: str, schedule_id: str):
     repository = DataRepository()
     result = repository.get_schdule_by_id(user_id, schedule_id)
-
+    
     if result is None:
         raise HTTPException(status_code=404, detail="Schedule not found.")
-
-    return { "schedule": result }
+    
+    return { 
+        "schedule": result["json"],
+        "csv": result["csv"] 
+    }
 
 @app.delete("/schedule-delete/{user_id}/{schedule_id}")
 async def delete_schedule(user_id: str, schedule_id: str):
