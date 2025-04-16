@@ -81,13 +81,36 @@ async def get_schedule_by_id(user_id: str, schedule_id: str):
 
 @app.delete("/schedule-delete/{user_id}/{schedule_id}")
 async def delete_schedule(user_id: str, schedule_id: str):
-    repository = DataRepository()
-    result = repository.delete_schedule(user_id, schedule_id)
+    """
+    Delete a schedule by its ID.
+    Enhanced with better error handling and validation.
+    """
+    print(f"API: Delete request received for schedule {schedule_id}, user {user_id}")
     
-    if not result:
-        raise HTTPException(status_code=404, detail="Failed to delete schedule.")
+    # Validate inputs
+    if not user_id or not schedule_id:
+        print(f"API: Invalid inputs - user_id: '{user_id}', schedule_id: '{schedule_id}'")
+        raise HTTPException(status_code=400, detail="Invalid user ID or schedule ID")
     
-    return { "result": str(result) }
+    try:
+        # Process deletion
+        repository = DataRepository()
+        result = repository.delete_schedule(user_id, schedule_id)
+        
+        print(f"API: Delete operation result: {result}")
+        
+        # Handle success/failure
+        if not result:
+            print(f"API: Delete operation failed for schedule {schedule_id}")
+            raise HTTPException(status_code=404, detail=f"Failed to delete schedule with ID {schedule_id}")
+        
+        print(f"API: Successfully deleted schedule {schedule_id}")
+        return { "result": "True" }  # Return string "True" to match expected frontend value
+        
+    except Exception as e:
+        print(f"API: Error in delete_schedule endpoint: {str(e)}")
+        # Return a 500 error for unexpected exceptions
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
