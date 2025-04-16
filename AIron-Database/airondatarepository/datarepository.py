@@ -129,9 +129,6 @@ class DataRepository:
             raise
 
 
-
-
-    
     def delete_schedule(self, user_id: str, schedule_id: str):
         try:
             user = self.get_user(user_id)
@@ -143,7 +140,7 @@ class DataRepository:
             
             index_to_remove = None
             for i, schedule in enumerate(user.schedules):
-                # Use .get in case the key is missing.
+                # Using .get to safely access the "id" key.
                 if schedule.get("id") == schedule_id:
                     index_to_remove = i
                     break
@@ -151,28 +148,31 @@ class DataRepository:
             if index_to_remove is None:
                 raise Exception(f"Schedule with id {schedule_id} not found in user's schedules.")
     
-            # Remove the schedule from the list.
+            # Remove the schedule from the user's schedules list.
             user.schedules.pop(index_to_remove)
             print("User schedules after deletion:", user.schedules)
             
-            # Update the user document.
+            # Update the user document in the database.
             data_worker = DataWorker(dataconstants.USER_COLLECTION)
             query = { dataconstants.ID: ObjectId(user_id) }
             json_string = json.dumps(user, cls=EnhancedJSONEncoder)
             data_dict = json.loads(json_string)
-            result = data_worker.collection.update_one(query, { "$set": data_dict})
+            # Remove the _id field from the data_dict, if present.
+            if "_id" in data_dict:
+                del data_dict["_id"]
+            
+            result = data_worker.collection.update_one(query, { "$set": data_dict })
             data_worker.close_connection()
             
-            # Instead of strictly checking for a modified_count of 1,
-            # we check that at least one document was matched.
             if result.matched_count < 1:
-                raise Exception("No user document matched for update after deletion.")
+                raise Exception(f"No user document matched for update after deletion for id {user_id}")
             
             return True
         except Exception as e:
             # Log the detailed error for debugging.
             print("Error in delete_schedule:", str(e))
             raise
+    
 
 
 
