@@ -137,14 +137,13 @@ class DataRepository:
         if not user:
             return False
         
-        # Find the index of the schedule to remove
+        # Use the literal key "id" to locate the schedule
         index_to_remove = None
         for i, schedule in enumerate(user.schedules):
-            if schedule[dataconstants.SCHEDULE_ID] == schedule_id:
+            if schedule["id"] == schedule_id:
                 index_to_remove = i
                 break
-        
-        # If schedule wasn't found
+        # If schedule wasn't found, return False
         if index_to_remove is None:
             return False
         
@@ -161,6 +160,8 @@ class DataRepository:
         data_worker.close_connection()
         
         return result.modified_count == 1
+
+
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
