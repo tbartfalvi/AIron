@@ -1,7 +1,7 @@
 import dataclasses
 from fastapi import FastAPI, HTTPException
 from airondatarepository.datarepository import DataRepository
-from models import User
+from .models import User
 import json
 from airondatarepository.dataenums import ScheduleType
 from fastapi.middleware.cors import CORSMiddleware
