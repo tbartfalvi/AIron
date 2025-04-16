@@ -70,15 +70,14 @@ async def get_schedules(user_id: str):
 @app.get("/schedule-get/{user_id}/{schedule_id}")
 async def get_schedule_by_id(user_id: str, schedule_id: str):
     repository = DataRepository()
-    result = repository.get_schdule_by_id(user_id, schedule_id)
+    schedule = repository.get_schdule_by_id(user_id, schedule_id)
     
-    if result is None:
+    if schedule is None:
         raise HTTPException(status_code=404, detail="Schedule not found.")
     
-    return { 
-        "schedule": result["json"],
-        "csv": result["csv"] 
-    }
+    # Return the complete schedule dictionary so the client has access to "name", "json", "csv", etc.
+    return {"schedule": schedule}
+
 
 @app.delete("/schedule-delete/{user_id}/{schedule_id}")
 async def delete_schedule(user_id: str, schedule_id: str):
