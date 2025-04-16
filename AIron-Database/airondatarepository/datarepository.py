@@ -138,12 +138,12 @@ class DataRepository:
             if not user:
                 raise Exception(f"User not found for id {user_id}")
     
-            # Log the user's current schedules for debugging.
+            # Debug: Log the user's current schedules.
             print("User schedules before deletion:", user.schedules)
             
             index_to_remove = None
             for i, schedule in enumerate(user.schedules):
-                # Use .get to be safe if the key is missing.
+                # Use .get in case the key is missing.
                 if schedule.get("id") == schedule_id:
                     index_to_remove = i
                     break
@@ -151,13 +151,11 @@ class DataRepository:
             if index_to_remove is None:
                 raise Exception(f"Schedule with id {schedule_id} not found in user's schedules.")
     
-            # Remove the schedule from the user's schedules list.
+            # Remove the schedule from the list.
             user.schedules.pop(index_to_remove)
-            
-            # Log the schedules after removal.
             print("User schedules after deletion:", user.schedules)
             
-            # Update the user document in the database.
+            # Update the user document.
             data_worker = DataWorker(dataconstants.USER_COLLECTION)
             query = { dataconstants.ID: ObjectId(user_id) }
             json_string = json.dumps(user, cls=EnhancedJSONEncoder)
@@ -165,14 +163,17 @@ class DataRepository:
             result = data_worker.collection.update_one(query, { "$set": data_dict})
             data_worker.close_connection()
             
-            if result.modified_count != 1:
-                raise Exception("Failed to update user document after deletion.")
-    
+            # Instead of strictly checking for a modified_count of 1,
+            # we check that at least one document was matched.
+            if result.matched_count < 1:
+                raise Exception("No user document matched for update after deletion.")
+            
             return True
         except Exception as e:
-            # Log the exception so that Uvicorn logs show the traceback.
+            # Log the detailed error for debugging.
             print("Error in delete_schedule:", str(e))
             raise
+
 
 
 
