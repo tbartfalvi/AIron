@@ -121,11 +121,12 @@ class DataRepository:
         schedules = self.get_schedules_by_user(user_id)
         
         for sched in schedules:
-            # Compare using the literal "id" field from the schedule
+            # Compare using the schedule's "id" field.
             if sched["id"] == schedule_id:
                 return sched  # Return the complete schedule dictionary.
         
         return None
+
 
 
     
