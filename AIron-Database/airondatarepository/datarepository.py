@@ -118,47 +118,61 @@ class DataRepository:
         return []
     
     def get_schdule_by_id(self, user_id: str, schedule_id: str):
-        schedules = self.get_schedules_by_user(user_id)
-        
-        for sched in schedules:
-            # Compare using the schedule's "id" field.
-            if sched["id"] == schedule_id:
-                return sched  # Return the complete schedule dictionary.
-        
-        return None
+        try:
+            schedules = self.get_schedules_by_user(user_id)
+            for sched in schedules:
+                if sched.get("id") == schedule_id:
+                    return sched   # Return the complete schedule object.
+            raise Exception(f"Schedule with id {schedule_id} not found.")
+        except Exception as e:
+            print("Error in get_schdule_by_id:", str(e))
+            raise
+
 
 
 
     
     def delete_schedule(self, user_id: str, schedule_id: str):
-        user = self.get_user(user_id)
-        
-        if not user:
-            return False
-        
-        # Use the literal key "id" to locate the schedule
-        index_to_remove = None
-        for i, schedule in enumerate(user.schedules):
-            if schedule["id"] == schedule_id:
-                index_to_remove = i
-                break
-        # If schedule wasn't found, return False
-        if index_to_remove is None:
-            return False
-        
-        # Remove the schedule from the user's schedules list
-        user.schedules.pop(index_to_remove)
-        
-        # Update the user document in the database
-        data_worker = DataWorker(dataconstants.USER_COLLECTION)
-        query = { dataconstants.ID: ObjectId(user_id) }
-        json_string = json.dumps(user, cls=EnhancedJSONEncoder)
-        data_dict = json.loads(json_string)
-        result = data_worker.collection.update_one(query, { "$set": data_dict})
-        
-        data_worker.close_connection()
-        
-        return result.modified_count == 1
+        try:
+            user = self.get_user(user_id)
+            if not user:
+                raise Exception(f"User not found for id {user_id}")
+    
+            # Log the user's current schedules for debugging.
+            print("User schedules before deletion:", user.schedules)
+            
+            index_to_remove = None
+            for i, schedule in enumerate(user.schedules):
+                # Use .get to be safe if the key is missing.
+                if schedule.get("id") == schedule_id:
+                    index_to_remove = i
+                    break
+    
+            if index_to_remove is None:
+                raise Exception(f"Schedule with id {schedule_id} not found in user's schedules.")
+    
+            # Remove the schedule from the user's schedules list.
+            user.schedules.pop(index_to_remove)
+            
+            # Log the schedules after removal.
+            print("User schedules after deletion:", user.schedules)
+            
+            # Update the user document in the database.
+            data_worker = DataWorker(dataconstants.USER_COLLECTION)
+            query = { dataconstants.ID: ObjectId(user_id) }
+            json_string = json.dumps(user, cls=EnhancedJSONEncoder)
+            data_dict = json.loads(json_string)
+            result = data_worker.collection.update_one(query, { "$set": data_dict})
+            data_worker.close_connection()
+            
+            if result.modified_count != 1:
+                raise Exception("Failed to update user document after deletion.")
+    
+            return True
+        except Exception as e:
+            # Log the exception so that Uvicorn logs show the traceback.
+            print("Error in delete_schedule:", str(e))
+            raise
 
 
 
