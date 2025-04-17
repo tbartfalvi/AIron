@@ -1,6 +1,8 @@
 import dataclasses
 from fastapi import FastAPI, HTTPException
 from airondatarepository.datarepository import DataRepository
+import sys, os
+sys.path.append(os.path.dirname(__file__))
 from .models import User
 import json
 from airondatarepository.dataenums import ScheduleType
