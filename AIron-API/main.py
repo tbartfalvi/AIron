@@ -6,7 +6,7 @@ import json
 from airondatarepository.dataenums import ScheduleType
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(docs_url="/documentation", redoc_url=None)
 
 origins = ["*"]  # Allows all origins.  Remove for production
 app.add_middleware(
