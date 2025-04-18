@@ -1,7 +1,7 @@
 import dataclasses
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, StreamingResponse
 from airondatarepository.datarepository import DataRepository
-import sys, os
+import sys, os, io
 sys.path.append(os.path.dirname(__file__))
 from models import User
 import json
@@ -69,7 +69,7 @@ async def get_schedules(user_id: str):
     result = repository.get_schedules_by_user(user_id)
     return { "schedules": result }
 
-@app.get("/schedule-get/{user_id}/{schedule_id}")
+@app.api_route("/schedule-get/{user_id}/{schedule_id}", methods=["GET", "POST"])
 async def get_schedule_by_id(user_id: str, schedule_id: str):
     repository = DataRepository()
     schedule = repository.get_schdule_by_id(user_id, schedule_id)
@@ -77,8 +77,14 @@ async def get_schedule_by_id(user_id: str, schedule_id: str):
     if schedule is None:
         raise HTTPException(status_code=404, detail="Schedule not found.")
     
-    # Return the complete schedule dictionary so the client has access to "name", "json", "csv", etc.
-    return {"schedule": schedule}
+    return {
+        "id":        schedule.get("id"),
+        "name":      schedule.get("name"),
+        "json":      schedule.get("json"),
+        "csv":       schedule.get("csv"),
+        "type":      schedule.get("type"),
+        "created":   schedule.get("created_on")
+    }
 
 
 @app.delete("/schedule-delete/{user_id}/{schedule_id}")
@@ -113,6 +119,19 @@ async def delete_schedule(user_id: str, schedule_id: str):
         print(f"API: Error in delete_schedule endpoint: {str(e)}")
         # Return a 500 error for unexpected exceptions
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+@app.get("/schedule-download/{user_id}/{schedule_id}")
+async def download_schedule_csv(user_id: str, schedule_id: str):
+    repo      = DataRepository()
+    schedule  = repo.get_schdule_by_id(user_id, schedule_id)
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    
+    csv_str = schedule.get("csv") or "Program Name,Exercise,Sets,Reps,Weight"
+    buffer  = io.BytesIO(csv_str.encode("utf-8"))
+    filename = f"{schedule.get('name','workout')}.csv"
+    headers  = {"Content-Disposition": f'attachment; filename="{filename}"'}
+    return StreamingResponse(buffer, media_type="text/csv", headers=headers)
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o):
