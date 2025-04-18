@@ -142,7 +142,7 @@ class DataRepository:
                 print(f"DELETE: User not found for id {user_id}")
                 return False
     
-            # Debug: Log the user's current schedules (limited info for log readability)
+            # Debug: Log the user's current schedules
             print(f"DELETE: User {user_id} has {len(user.schedules)} schedules before deletion")
             
             # Find the schedule to delete
@@ -169,16 +169,11 @@ class DataRepository:
             data_worker = DataWorker(dataconstants.USER_COLLECTION)
             query = { dataconstants.ID: ObjectId(user_id) }
             
-            # Convert user object to dictionary for MongoDB update
-            json_string = json.dumps(user, cls=EnhancedJSONEncoder)
-            data_dict = json.loads(json_string)
-            
-            # Remove the _id field from the data_dict if present (MongoDB doesn't allow _id in update)
-            if "_id" in data_dict:
-                del data_dict["_id"]
+            # The key change: Use $set with the schedules field specifically rather than the entire user object
+            update = { "$set": { dataconstants.SCHEDULES: user.schedules } }
             
             # Perform the database update
-            result = data_worker.collection.update_one(query, { "$set": data_dict })
+            result = data_worker.collection.update_one(query, update)
             data_worker.close_connection()
             
             # Check if update was successful
