@@ -108,7 +108,7 @@ async def get_schedule_by_id(user_id: str, schedule_id: str):
     }
 
 
-@app.delete("/schedule-delete/{user_id}/{schedule_id}")
+@app.post("/schedule-delete/{user_id}/{schedule_id}")
 async def delete_schedule(user_id: str, schedule_id: str):
     repo = DataRepository()
     ok = repo.delete_schedule(user_id, schedule_id)
