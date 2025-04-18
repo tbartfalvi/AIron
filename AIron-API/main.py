@@ -1,5 +1,6 @@
 import dataclasses
-from fastapi import FastAPI, HTTPException, StreamingResponse
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from airondatarepository.datarepository import DataRepository
 import sys, os, io
 sys.path.append(os.path.dirname(__file__))
