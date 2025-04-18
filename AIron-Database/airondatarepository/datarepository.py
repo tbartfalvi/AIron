@@ -116,6 +116,20 @@ class DataRepository:
             return user.schedules
         
         return []
+
+    def delete_schedule(self, user_id: str, schedule_id: str) -> bool:
+        """
+        Atomically remove a schedule from the user's `schedules` array.
+        Returns True if a document was modified, False otherwise.
+        """
+        _id         = ObjectId(user_id) if len(user_id) == 24 else user_id
+        data_worker = DataWorker(dataconstants.USER_COLLECTION)
+        res         = data_worker.collection.update_one(
+            {"_id": _id, "schedules.id": schedule_id},
+            {"$pull": {"schedules": {"id": schedule_id}}},
+        )
+        data_worker.close_connection()
+        return res.modified_count > 0
     
     def get_schdule_by_id(self, user_id: str, schedule_id: str):
         try:
@@ -127,69 +141,6 @@ class DataRepository:
         except Exception as e:
             print("Error in get_schdule_by_id:", str(e))
             raise
-
-    def delete_schedule(self, user_id: str, schedule_id: str):
-        """
-        Delete a schedule by its ID for a specific user.
-        Enhanced with better error handling and debugging.
-        """
-        try:
-            print(f"DELETE: Starting deletion process for schedule {schedule_id} user {user_id}")
-            
-            # Get the user
-            user = self.get_user(user_id)
-            if not user:
-                print(f"DELETE: User not found for id {user_id}")
-                return False
-    
-            # Debug: Log the user's current schedules
-            print(f"DELETE: User {user_id} has {len(user.schedules)} schedules before deletion")
-            
-            # Find the schedule to delete
-            index_to_remove = None
-            for i, schedule in enumerate(user.schedules):
-                schedule_id_from_db = schedule.get("id")
-                print(f"DELETE: Comparing schedule ID: '{schedule_id_from_db}' with requested ID: '{schedule_id}'")
-                
-                if schedule_id_from_db == schedule_id:
-                    index_to_remove = i
-                    print(f"DELETE: Match found at index {i}")
-                    break
-    
-            if index_to_remove is None:
-                print(f"DELETE: No matching schedule found with id '{schedule_id}'")
-                return False
-    
-            # Remove the schedule from the user's schedules list
-            removed_schedule = user.schedules.pop(index_to_remove)
-            print(f"DELETE: Removed schedule: {removed_schedule.get('name')} with id {removed_schedule.get('id')}")
-            print(f"DELETE: User now has {len(user.schedules)} schedules")
-            
-            # Update the user document in the database
-            data_worker = DataWorker(dataconstants.USER_COLLECTION)
-            query = { dataconstants.ID: ObjectId(user_id) }
-            
-            # The key change: Use $set with the schedules field specifically rather than the entire user object
-            update = { "$set": { dataconstants.SCHEDULES: user.schedules } }
-            
-            # Perform the database update
-            result = data_worker.collection.update_one(query, update)
-            data_worker.close_connection()
-            
-            # Check if update was successful
-            if result.modified_count < 1:
-                print(f"DELETE: Database update failed. Modified count: {result.modified_count}")
-                return False
-            
-            print(f"DELETE: Successfully deleted schedule {schedule_id} for user {user_id}")
-            return True
-            
-        except Exception as e:
-            print(f"DELETE: Error in delete_schedule: {str(e)}")
-            print(f"DELETE: Exception type: {type(e).__name__}")
-            import traceback
-            print(f"DELETE: Stack trace: {traceback.format_exc()}")
-            return False  # Return False instead of raising to prevent API 500 errors
 
 
 
