@@ -12,6 +12,15 @@ from airondatarepository.dataenums import ScheduleType
 sys.path.append(os.path.dirname(__file__))
 from models import User   # keep after sys.path append
 
+import logging
+
+# Create api log
+logging.basicConfig(
+    filename='airon-api.log',  # Specify the log file name
+    level=logging.INFO,  # Set the logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format='%(asctime)s - %(levelname)s - %(message)s'  # Define the log message format
+)
+
 
 # ───────────────────────────────────────────────────────────────
 # FastAPI boilerplate
@@ -108,16 +117,17 @@ async def get_schedule_by_id(user_id: str, schedule_id: str):
     }
 
 
-@app.post("/schedule-delete/{user_id}/{schedule_id}")
+@app.api_route("/schedule-delete/{user_id}/{schedule_id}", methods=["DELETE"])
 async def delete_schedule(user_id: str, schedule_id: str):
-    print("main.py: delete_schedule: open data repository.")
+    logging.info("main.py: delete_schedule: open data repository.")
     repo = DataRepository()
-    print("main.py: calling delete_schedule function")
+    logging.info("main.py: calling delete_schedule function")
     ok = repo.delete_schedule(user_id, schedule_id)
     if not ok:
+        logging.error("main.py: Delete failed")
         raise HTTPException(status_code=404, detail="main.py: Delete failed")
     
-    print("main.py: successfully called delete_schedule!")
+    logging.info("main.py: successfully called delete_schedule!")
     return {"result": "True"}
 
 
