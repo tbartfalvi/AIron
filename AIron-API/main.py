@@ -120,16 +120,15 @@ async def get_schedule_by_id(user_id: str, schedule_id: str):
 @app.api_route("/schedule-delete/{user_id}/{schedule_id}", methods=["DELETE"])
 async def delete_schedule(user_id: str, schedule_id: str):
     logging.info("main.py: delete_schedule: open data repository.")
-    repo = DataRepository()
-    logging.info("main.py: calling delete_schedule function")
-    ok = repo.delete_schedule(user_id, schedule_id)
-    if not ok:
-        logging.error("main.py: Delete failed")
-        raise HTTPException(status_code=404, detail="main.py: Delete failed")
+    #repo = DataRepository()
+    #logging.info("main.py: calling delete_schedule function")
+    #ok = repo.delete_schedule(user_id, schedule_id)
+    #if not ok:
+    #    logging.error("main.py: Delete failed")
+    #    raise HTTPException(status_code=404, detail="main.py: Delete failed")
     
     logging.info("main.py: successfully called delete_schedule!")
     return {"result": "True"}
-
 
 @app.get("/schedule-download/{user_id}/{schedule_id}")
 async def download_schedule_csv(user_id: str, schedule_id: str):
