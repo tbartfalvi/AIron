@@ -29,7 +29,12 @@ logging.basicConfig(
 # ───────────────────────────────────────────────────────────────
 # FastAPI boilerplate
 # ───────────────────────────────────────────────────────────────
-app = FastAPI(docs_url=None, redoc_url=None)
+app = FastAPI(
+    version="1.0.1",
+    title="AIron API",
+    description="All api calls for AIron processing",
+    docs_url=None, 
+    redoc_url=None)
 
 app.add_middleware(
     CORSMiddleware,
