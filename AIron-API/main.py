@@ -110,10 +110,14 @@ async def get_schedule_by_id(user_id: str, schedule_id: str):
 
 @app.post("/schedule-delete/{user_id}/{schedule_id}")
 async def delete_schedule(user_id: str, schedule_id: str):
+    print("main.py: delete_schedule: open data repository.")
     repo = DataRepository()
+    print("main.py: calling delete_schedule function")
     ok = repo.delete_schedule(user_id, schedule_id)
     if not ok:
-        raise HTTPException(status_code=404, detail="Delete failed")
+        raise HTTPException(status_code=404, detail="main.py: Delete failed")
+    
+    print("main.py: successfully called delete_schedule!")
     return {"result": "True"}
 
 
