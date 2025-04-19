@@ -56,7 +56,7 @@ def _to_dict(s: Any) -> dict:
 # ───────────────────────────────────────────────────────────────
 @app.get("/")
 def root():
-    return {"message": "Hello World"}
+    return {"message": app.version}
 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
